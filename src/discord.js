@@ -13,7 +13,7 @@ module.exports.send = (id, token, repo, url, commits, size, pusher) =>
       })
       client
         .send({
-          avatar_url: "https://slrn.dev/SLRN_Development.png",
+          avatarURL: "https://slrn.dev/SLRN_Development.png",
           username: username,
           embeds: [createEmbed(url, commits, size, pusher)],
         })
