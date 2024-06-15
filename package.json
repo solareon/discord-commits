@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ChatDisabled/discord-commits.git"
+    "url": "git+https://github.com/solareon/discord-commits.git"
   },
   "keywords": [
     "github",
@@ -19,9 +19,9 @@
   "author": "Chat",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/ChatDisabled/discord-commits/issues"
+    "url": "https://github.com/solareon/discord-commits/issues"
   },
-  "homepage": "https://github.com/ChatDisabled/discord-commits#readme",
+  "homepage": "https://github.com/solareon/discord-commits#readme",
   "dependencies": {
     "@actions/core": "^1.2.3",
     "@actions/github": "^2.1.1",
