@@ -14,7 +14,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     - name: Run Discord Webhook
-      uses: Mist3r-Robot/classic-discord-webhook@main
+      uses: solareon/discord-webhook@main
       with:
         id: ${{ secrets.DISCORD_WEBHOOK_ID }}
         token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
