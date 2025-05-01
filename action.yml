@@ -11,6 +11,9 @@ inputs:
   token:
     description: The Discord Webhook Token
     required: true
+  avatarUrl:
+    description: The avatar URL for the webhook
+    required: false
 
 runs:
   using: 'node20'

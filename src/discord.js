@@ -1,7 +1,7 @@
 const { MessageEmbed, WebhookClient } = require('discord.js')
 const MAX_MESSAGE_LENGTH = 72
 
-module.exports.send = (id, token, repo, url, commits, size, pusher) =>
+module.exports.send = (id, token, repo, url, commits, size, pusher, avatarURL) =>
   new Promise((resolve, reject) => {
     let client
     const username = repo.replace(/(discord)/gi, '******')
@@ -13,7 +13,7 @@ module.exports.send = (id, token, repo, url, commits, size, pusher) =>
       })
       client
         .send({
-          avatarURL: "https://slrn.dev/SLRN_Development.png",
+          avatarURL: avatarURL || 'https://slrn.dev/SLRN_Development.png',
           username: username,
           embeds: [createEmbed(url, commits, size, pusher)],
         })
