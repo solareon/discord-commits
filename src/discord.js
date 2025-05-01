@@ -67,7 +67,7 @@ function getChangeLog(commits, size) {
         ? commit.message.substring(0, MAX_MESSAGE_LENGTH) + '...'
         : commit.message
     changelog += hideCommitUrl
-      ? `[\`${sha}\`] — ${message} ([\`${commit.author.username}\`](https://github.com/${commit.author.username}))\n`
+      ? `\`${sha}\` — ${message} ([\`${commit.author.username}\`](https://github.com/${commit.author.username}))\n`
       : `[\`${sha}\`](${commit.url}) — ${message} ([\`${commit.author.username}\`](https://github.com/${commit.author.username}))\n`
   }
 
