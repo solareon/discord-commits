@@ -4,15 +4,17 @@ const webhook = require('../src/discord.js')
 
 async function run() {
   const payload = github.context.payload
-  const repository = payload.repository.name
+  const repository = (core.getInput('repoName') || payload.repository.name).replace(/discord/gi, '*******')
   const commits = payload.commits
   const size = commits.length
 
   console.log(`Received payload.`)
   console.log(`Received ${commits.length}/${size} commits...`)
-  console.log(`------------------------`)
-  console.log(`Full payload: ${JSON.stringify(payload)}`)
-  console.log(`------------------------`)
+  if (core.getInput('debug') === 'true') {
+    console.log(`------------------------`)
+    console.log(`Full payload: ${JSON.stringify(payload)}`)
+    console.log(`------------------------`)
+  }
 
   if (commits.length === 0) {
     console.log(`No commits, skipping...`)
@@ -25,7 +27,6 @@ async function run() {
 
   const id = core.getInput('id')
   const token = core.getInput('token')
-  const avatarUrl = core.getInput('avatarUrl')
 
   webhook
     .send(
@@ -36,7 +37,6 @@ async function run() {
       commits,
       size,
       payload.pusher.name,
-      avatarUrl
     )
     .catch((err) => core.setFailed(err.message))
 }

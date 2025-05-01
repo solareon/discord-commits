@@ -11,8 +11,17 @@ inputs:
   token:
     description: The Discord Webhook Token
     required: true
+  repoName:
+    description: Overrides default repo name
+    required: false
   avatarUrl:
     description: The avatar URL for the webhook
+    required: false
+  hideCommitUrl:
+    description: Hides the commit URL in the message
+    required: false
+  debug:
+    description: Enables debug mode
     required: false
 
 runs:

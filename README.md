@@ -19,13 +19,20 @@ jobs:
       with:
         id: ${{ secrets.DISCORD_WEBHOOK_ID }}
         token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+        repoName: "discord-commits"
         avatarUrl: "https://slrn.dev/SLRN_Development.png"
+        hideCommitUrl: false
+        debug: false
 
 ```
 
 You can see the example file at [/.github/workflows/discord-push.yml](/.github/workflows/discord-push.yml)
 ## Inputs
+- `repoName`: overrides the repo name for the embed
 - `avatarUrl`: sets the url for the embed avatar. Defaults to https://slrn.dev/SLRN_Development.png
+- `hideCommitUrl`: hides the commit url (useful for private repos)
+- `debug`: enables debug prints
+
 
 in your **Settings > Security > Secrets and variables > Actions > Secrets** (/settings/secrets/actions) on GitHub, you need to add 2 secrets :
 - `DISCORD_WEBHOOK_ID`

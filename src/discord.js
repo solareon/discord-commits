@@ -1,10 +1,12 @@
+const core = require('@actions/core')
 const { MessageEmbed, WebhookClient } = require('discord.js')
 const MAX_MESSAGE_LENGTH = 72
+const avatarUrl = core.getInput('avatarUrl')
+const hideCommitUrl = core.getInput('hideCommitUrl') === 'true'
 
-module.exports.send = (id, token, repo, url, commits, size, pusher, avatarURL) =>
+module.exports.send = (id, token, repo, url, commits, size, pusher) =>
   new Promise((resolve, reject) => {
     let client
-    const username = repo.replace(/(discord)/gi, '******')
     console.log('Preparing Webhook...')
     try {
       client = new WebhookClient({
@@ -13,8 +15,8 @@ module.exports.send = (id, token, repo, url, commits, size, pusher, avatarURL) =
       })
       client
         .send({
-          avatarURL: avatarURL || 'https://slrn.dev/SLRN_Development.png',
-          username: username,
+          avatarURL: avatarUrl || 'https://slrn.dev/SLRN_Development.png',
+          username: repo,
           embeds: [createEmbed(url, commits, size, pusher)],
         })
         .then(() => {
@@ -64,7 +66,9 @@ function getChangeLog(commits, size) {
       commit.message.length > MAX_MESSAGE_LENGTH
         ? commit.message.substring(0, MAX_MESSAGE_LENGTH) + '...'
         : commit.message
-    changelog += `[\`${sha}\`](${commit.url}) — ${message} ([\`${commit.author.username}\`](https://github.com/${commit.author.username}))\n`
+    changelog += hideCommitUrl
+      ? `[\`${sha}\`] — ${message} ([\`${commit.author.username}\`](https://github.com/${commit.author.username}))\n`
+      : `[\`${sha}\`](${commit.url}) — ${message} ([\`${commit.author.username}\`](https://github.com/${commit.author.username}))\n`
   }
 
   return changelog
