@@ -15,7 +15,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run Discord Webhook
-      uses: solareon/discord-webhook@main
+      uses: solareon/discord-commits@main
       with:
         id: ${{ secrets.DISCORD_WEBHOOK_ID }}
         token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
