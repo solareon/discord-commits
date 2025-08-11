@@ -46,7 +46,7 @@ function createEmbed(url, commits, size, pusher) {
         size === 1 ? '' : 's'
       }`,
       iconURL: `https://github.com/${pusher}.png?size=64`,
-      url: url,
+      url: hideCommitUrl ? `https://github.com/${pusher}` : url,
     })
     .setDescription(`${getChangeLog(commits, size)}`)
     .setTimestamp(Date.parse(latest.timestamp))
