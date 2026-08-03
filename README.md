@@ -42,3 +42,12 @@ in your **Settings > Security > Secrets and variables > Actions > Secrets** (/se
 |                                                  `DISCORD_WEBHOOK_ID`                                                  |                           `DISCORD_WEBHOOK_TOKEN`                           |
 |:----------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------:|
 | **Required** — This is the id of your Discord webhook, if you copy the webhook url, this will be the first part of it. | **Required** — Your Discord webhook token, it's the second part of the url. |
+
+## Development
+
+This action targets Node.js 24. Install the pinned runtime from `.nvmrc`, then run:
+
+```sh
+npm ci
+npm test
+```

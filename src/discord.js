@@ -1,75 +1,71 @@
-const core = require('@actions/core')
-const { MessageEmbed, WebhookClient } = require('discord.js')
+import * as core from '@actions/core'
+
 const MAX_MESSAGE_LENGTH = 72
-const avatarUrl = core.getInput('avatarUrl')
-const hideCommitUrl = core.getInput('hideCommitUrl') === 'true'
+const MAX_COMMITS = 8
+const DEFAULT_AVATAR_URL = 'https://slrn.dev/SLRN_Development.png'
 
-module.exports.send = (id, token, repo, url, commits, size, pusher) =>
-  new Promise((resolve, reject) => {
-    let client
-    console.log('Preparing Webhook...')
-    try {
-      client = new WebhookClient({
-        id: id,
-        token: token,
-      })
-      client
-        .send({
-          avatarURL: avatarUrl || 'https://slrn.dev/SLRN_Development.png',
-          username: repo,
-          embeds: [createEmbed(url, commits, size, pusher)],
-        })
-        .then(() => {
-          console.log('Successfully sent the message!')
-          resolve()
-        }, reject)
-    } catch (error) {
-      console.log('Error creating Webhook')
-      reject(error.message)
-      return
-    }
-  })
+export async function send(
+  { id, token, repo, url, commits, size, pusher, avatarUrl, hideCommitUrl },
+  fetchImpl = fetch,
+) {
+  core.info('Preparing webhook...')
+  const response = await fetchImpl(
+    `https://discord.com/api/v10/webhooks/${encodeURIComponent(id)}/${encodeURIComponent(token)}`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        avatar_url: avatarUrl || DEFAULT_AVATAR_URL,
+        username: repo,
+        embeds: [createEmbed({ url, commits, size, pusher, hideCommitUrl })],
+        allowed_mentions: { parse: [] },
+      }),
+    },
+  )
 
-function createEmbed(url, commits, size, pusher) {
-  console.log('Constructing Embed...')
-  console.log('Commits :')
-  console.log(commits)
-  if (!commits) {
-    console.log('No commits, skipping...')
-    return
+  if (!response.ok) {
+    const details = await response.text()
+    throw new Error(`Discord webhook failed (${response.status}): ${details || response.statusText}`)
   }
-  const latest = commits[0]
-  return new MessageEmbed()
-    .setColor(0xff6228)
-    .setAuthor({
-      name: `⚡ ${pusher} pushed ${size} commit${
-        size === 1 ? '' : 's'
-      }`,
-      iconURL: `https://github.com/${pusher}.png?size=64`,
-      url: hideCommitUrl ? `https://github.com/${pusher}` : url,
-    })
-    .setDescription(`${getChangeLog(commits, size)}`)
-    .setTimestamp(Date.parse(latest.timestamp))
+
+  core.info('Successfully sent the message!')
 }
 
-function getChangeLog(commits, size) {
-  let changelog = ''
-  for (const i in commits) {
-    if (i > 7) {
-      changelog += `+ ${size - i} more...\n`
-      break
-    }
+export function createEmbed({ url, commits, size, pusher, hideCommitUrl }) {
+  const latest = commits.at(-1)
 
-    const commit = commits[i]
-    const sha = commit.id.substring(0, 6)
+  return {
+    color: 0xff6228,
+    author: {
+      name: `⚡ ${pusher} pushed ${size} commit${size === 1 ? '' : 's'}`,
+      icon_url: `https://github.com/${pusher}.png?size=64`,
+      url: hideCommitUrl ? `https://github.com/${pusher}` : url,
+    },
+    description: getChangeLog(commits, size, hideCommitUrl),
+    timestamp: new Date(latest.timestamp).toISOString(),
+  }
+}
+
+export function getChangeLog(commits, size, hideCommitUrl) {
+  const lines = commits.slice(0, MAX_COMMITS).map((commit) => {
+    const sha = commit.id.slice(0, 6)
+    const normalizedMessage = commit.message.replace(/\s+/g, ' ').trim()
     const message =
-      commit.message.length > MAX_MESSAGE_LENGTH
-        ? commit.message.substring(0, MAX_MESSAGE_LENGTH) + '...'
-        : commit.message
-    changelog += hideCommitUrl
-      ? `\`${sha}\` — ${message} ([\`${commit.author.username}\`](https://github.com/${commit.author.username}))\n`
-      : `[\`${sha}\`](${commit.url}) — ${message} ([\`${commit.author.username}\`](https://github.com/${commit.author.username}))\n`
+      normalizedMessage.length > MAX_MESSAGE_LENGTH
+        ? `${normalizedMessage.slice(0, MAX_MESSAGE_LENGTH)}...`
+        : normalizedMessage
+    const author = commit.author?.username
+      ? `[\`${commit.author.username}\`](https://github.com/${commit.author.username})`
+      : `\`${commit.author?.name ?? 'unknown'}\``
+    const commitLink = hideCommitUrl ? `\`${sha}\`` : `[\`${sha}\`](${commit.url})`
+
+    return `${commitLink} — ${message} (${author})`
+  })
+
+  const remaining = Math.max(0, size - lines.length)
+  if (remaining > 0) {
+    lines.push(`+ ${remaining} more...`)
   }
 
-  return changelog
+  return lines.join('\n')
 }

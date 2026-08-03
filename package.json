@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "description": "This GitHub Action can produce fancy and more meaningful discord messages for your commits.",
   "main": "src/index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "npm@11.8.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test"
   },
   "repository": {
     "type": "git",
@@ -16,15 +21,13 @@
     "discord",
     "webhook"
   ],
-  "author": "Chat",
+  "author": "solareon.",
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/solareon/discord-commits/issues"
   },
   "homepage": "https://github.com/solareon/discord-commits#readme",
   "dependencies": {
-    "@actions/core": "^1.9.1",
-    "@actions/github": "^6.0.0",
-    "discord.js": "^13.6.0"
+    "@actions/core": "^3.0.1"
   }
 }

@@ -1,48 +1,57 @@
-const core = require('@actions/core')
-const github = require('@actions/github')
-const webhook = require('../src/discord.js')
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
-async function run() {
-  const payload = github.context.payload
-  const repository = (core.getInput('repoName') || payload.repository.name).replace(/discord/gi, '*******')
-  const commits = payload.commits
-  const size = commits.length
+import * as core from '@actions/core'
+import { send } from './discord.js'
 
-  console.log(`Received payload.`)
-  console.log(`Received ${commits.length}/${size} commits...`)
-  if (core.getInput('debug') === 'true') {
-    console.log(`------------------------`)
-    console.log(`Full payload: ${JSON.stringify(payload)}`)
-    console.log(`------------------------`)
+export function getPayload(eventPath = process.env.GITHUB_EVENT_PATH) {
+  return eventPath ? JSON.parse(readFileSync(eventPath, 'utf8')) : {}
+}
+
+function getOptionalBooleanInput(name) {
+  return core.getInput(name) ? core.getBooleanInput(name) : false
+}
+
+export async function run() {
+  const payload = getPayload()
+  const commits = payload.commits ?? []
+  const size = payload.size ?? commits.length
+
+  core.info(`Received ${commits.length}/${size} commits.`)
+  if (getOptionalBooleanInput('debug')) {
+    core.info(`Full payload: ${JSON.stringify(payload)}`)
   }
 
   if (commits.length === 0) {
-    console.log(`No commits, skipping...`)
+    core.info('No commits, skipping.')
     return
   }
-  if (payload.sender.type === 'Bot') {
-    console.log(`Commit by bot, skipping...`)
+  if (payload.sender?.type === 'Bot') {
+    core.info('Commit by bot, skipping.')
     return
   }
 
-  const id = core.getInput('id')
-  const token = core.getInput('token')
+  const repository = (core.getInput('repoName') || payload.repository?.name || 'GitHub').replace(
+    /discord/gi,
+    '*******',
+  )
 
-  webhook
-    .send(
-      id,
-      token,
-      repository,
-      payload.compare,
-      commits,
-      size,
-      payload.pusher.name,
-    )
-    .catch((err) => core.setFailed(err.message))
+  await send({
+    id: core.getInput('id', { required: true }),
+    token: core.getInput('token', { required: true }),
+    repo: repository,
+    url: payload.compare,
+    commits,
+    size,
+    pusher: payload.pusher?.name ?? payload.sender?.login ?? 'unknown',
+    avatarUrl: core.getInput('avatarUrl'),
+    hideCommitUrl: getOptionalBooleanInput('hideCommitUrl'),
+  })
 }
 
-try {
-  run()
-} catch (error) {
-  core.setFailed(error.message)
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  run().catch((error) => {
+    core.setFailed(error instanceof Error ? error.message : String(error))
+  })
 }
