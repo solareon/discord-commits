@@ -4,13 +4,34 @@ const MAX_MESSAGE_LENGTH = 72
 const MAX_COMMITS = 8
 const DEFAULT_AVATAR_URL = 'https://slrn.dev/SLRN_Development.png'
 
+export function getWebhookUrl({ webhook, id, token }) {
+  if (webhook) {
+    const parsed = new URL(webhook)
+    const path = parsed.pathname.split('/').filter(Boolean)
+
+    if (
+      parsed.protocol !== 'https:' ||
+      !['discord.com', 'discordapp.com'].includes(parsed.hostname) ||
+      path.length !== 4 ||
+      path[0] !== 'api' ||
+      path[1] !== 'webhooks'
+    ) {
+      throw new Error('The webhook input must be a full Discord webhook URL.')
+    }
+
+    return parsed.toString()
+  }
+
+  return `https://discord.com/api/v10/webhooks/${encodeURIComponent(id)}/${encodeURIComponent(token)}`
+}
+
 export async function send(
-  { id, token, repo, url, commits, size, pusher, avatarUrl, hideCommitUrl },
+  { webhook, id, token, repo, url, commits, size, pusher, avatarUrl, hideCommitUrl },
   fetchImpl = fetch,
 ) {
   core.info('Preparing webhook...')
   const response = await fetchImpl(
-    `https://discord.com/api/v10/webhooks/${encodeURIComponent(id)}/${encodeURIComponent(token)}`,
+    getWebhookUrl({ webhook, id, token }),
     {
       method: 'POST',
       headers: { 'content-type': 'application/json' },

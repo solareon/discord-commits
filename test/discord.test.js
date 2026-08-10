@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { createEmbed, getChangeLog, send } from '../src/discord.js'
+import { createEmbed, getChangeLog, getWebhookUrl, send } from '../src/discord.js'
 
 const commits = [
   {
@@ -81,4 +81,34 @@ test('posts the webhook with mentions disabled', async () => {
   assert.equal(request.url, 'https://discord.com/api/v10/webhooks/webhook%2Fid/secret%2Ftoken')
   assert.deepEqual(body.allowed_mentions, { parse: [] })
   assert.equal(body.embeds[0].timestamp, '2026-08-02T10:00:00.000Z')
+})
+
+test('posts using a full webhook URL', async () => {
+  let request
+  const fetchMock = async (url) => {
+    request = { url }
+    return { ok: true }
+  }
+
+  await send(
+    {
+      webhook: 'https://discord.com/api/webhooks/webhook-id/webhook-token?thread_id=123',
+      repo: 'example-repo',
+      url: 'https://github.com/example/repo/compare/before...after',
+      commits,
+      size: commits.length,
+      pusher: 'octocat',
+      hideCommitUrl: false,
+    },
+    fetchMock,
+  )
+
+  assert.equal(request.url, 'https://discord.com/api/webhooks/webhook-id/webhook-token?thread_id=123')
+})
+
+test('rejects malformed webhook URLs', () => {
+  assert.throws(
+    () => getWebhookUrl({ webhook: 'https://example.com/not-a-webhook' }),
+    /full Discord webhook URL/,
+  )
 })

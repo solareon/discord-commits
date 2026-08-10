@@ -37,9 +37,12 @@ export async function run() {
     '*******',
   )
 
+  const webhook = core.getInput('webhook')
+
   await send({
-    id: core.getInput('id', { required: true }),
-    token: core.getInput('token', { required: true }),
+    webhook,
+    id: webhook ? undefined : core.getInput('id', { required: true }),
+    token: webhook ? undefined : core.getInput('token', { required: true }),
     repo: repository,
     url: payload.compare,
     commits,

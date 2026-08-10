@@ -9,5 +9,4 @@ jobs:
       - name: Run Discord Webhook
         uses: solareon/discord-commits@v1
         with:
-          id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}

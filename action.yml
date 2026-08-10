@@ -5,12 +5,15 @@ branding:
   color: gray-dark
 
 inputs:
+  webhook:
+    description: The full Discord Webhook URL
+    required: false
   id:
     description: The Discord Webhook ID
-    required: true
+    required: false
   token:
     description: The Discord Webhook Token
-    required: true
+    required: false
   repoName:
     description: Overrides default repo name
     required: false
